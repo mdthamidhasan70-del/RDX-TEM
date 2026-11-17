@@ -1,0 +1,201 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global default-deny fallback
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 1. Authentication & Identity Helpers
+    function isAuthenticated() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string &&
+        id.size() > 0 &&
+        id.size() <= 64 &&
+        id.matches('^[a-zA-Z0-9_-]+$') &&
+        !id.matches('.*\\.\\..*');
+    }
+
+    function isNonEmptyBoundedString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isBoundedString(val, maxLen) {
+      return val is string && val.size() <= maxLen;
+    }
+
+    // 2. Entity Validators
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'createdAt', 'updatedAt']) &&
+        data.uid == userId &&
+        isNonEmptyBoundedString(data.email, 3, 160) &&
+        isBoundedString(data.displayName, 120) &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidGuild(data, userId, guildId) {
+      return data.keys().hasAll([
+          'clan_id', 'name', 'region', 'verified', 'duration_days',
+          'duration_hours', 'duration_minutes', 'expires_at', 'is_paused',
+          'created_at', 'ownerUid', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clan_id', 'name', 'region', 'verified', 'duration_days',
+          'duration_hours', 'duration_minutes', 'expires_at', 'is_paused',
+          'created_at', 'ownerUid', 'createdAt', 'updatedAt'
+        ]) &&
+        data.clan_id == guildId &&
+        data.clan_id.matches('^[0-9]{1,24}$') &&
+        isNonEmptyBoundedString(data.name, 1, 80) &&
+        isNonEmptyBoundedString(data.region, 2, 12) &&
+        data.verified is bool &&
+        data.duration_days is number && data.duration_days >= 0 && data.duration_days <= 365 &&
+        data.duration_hours is number && data.duration_hours >= 0 && data.duration_hours <= 23 &&
+        data.duration_minutes is number && data.duration_minutes >= 0 && data.duration_minutes <= 59 &&
+        (data.expires_at == null || (data.expires_at is number && data.expires_at >= 0)) &&
+        data.is_paused is bool &&
+        data.created_at is number && data.created_at >= 0 &&
+        data.ownerUid == userId &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSquad(data, userId, squadId) {
+      return data.keys().hasAll([
+          'id', 'clan_id', 'name', 'target_size', 'game_mode',
+          'lobby_delay_sec', 'bot_prefix', 'is_paused', 'created_at',
+          'ownerUid', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'clan_id', 'name', 'target_size', 'game_mode',
+          'lobby_delay_sec', 'bot_prefix', 'is_paused', 'created_at',
+          'ownerUid', 'createdAt', 'updatedAt'
+        ]) &&
+        data.id == squadId &&
+        isBoundedString(data.clan_id, 24) &&
+        isNonEmptyBoundedString(data.name, 1, 64) &&
+        data.target_size is number && data.target_size >= 2 && data.target_size <= 4 &&
+        data.game_mode in ['BR', 'BR_RANK', 'CS', 'CS_RANK'] &&
+        data.lobby_delay_sec is number && data.lobby_delay_sec >= 0 && data.lobby_delay_sec <= 120 &&
+        isNonEmptyBoundedString(data.bot_prefix, 1, 8) &&
+        data.is_paused is bool &&
+        data.created_at is number && data.created_at >= 0 &&
+        data.ownerUid == userId &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidBotAccount(data, userId, accountId) {
+      return data.keys().hasAll([
+          'uid', 'password', 'region', 'clan_id', 'squad_id',
+          'bot_prefix', 'nickname', 'max_matches', 'max_hours',
+          'ownerUid', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'uid', 'password', 'region', 'clan_id', 'squad_id',
+          'bot_prefix', 'nickname', 'max_matches', 'max_hours',
+          'ownerUid', 'createdAt', 'updatedAt'
+        ]) &&
+        data.uid == accountId &&
+        isNonEmptyBoundedString(data.password, 1, 64) &&
+        isNonEmptyBoundedString(data.region, 2, 12) &&
+        isBoundedString(data.clan_id, 24) &&
+        isBoundedString(data.squad_id, 64) &&
+        isBoundedString(data.bot_prefix, 8) &&
+        isBoundedString(data.nickname, 40) &&
+        data.max_matches is number && data.max_matches >= 0 && data.max_matches <= 100000 &&
+        data.max_hours is number && data.max_hours >= 0 && data.max_hours <= 8760 &&
+        data.ownerUid == userId &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // 3. Collection Match Blocks (Owner-Scoped)
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfile(request.resource.data, userId) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfile(request.resource.data, userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email', 'displayName', 'updatedAt']);
+      allow delete: if false;
+
+      match /guilds/{guildId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          isValidId(guildId) &&
+          isValidGuild(request.resource.data, userId, guildId) &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.updatedAt == request.time;
+        allow update: if isOwner(userId) &&
+          isValidId(guildId) &&
+          isValidGuild(request.resource.data, userId, guildId) &&
+          request.resource.data.ownerUid == resource.data.ownerUid &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.updatedAt == request.time &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'region', 'verified', 'duration_days', 'duration_hours',
+            'duration_minutes', 'expires_at', 'is_paused', 'updatedAt'
+          ]);
+        allow delete: if isOwner(userId);
+      }
+
+      match /squads/{squadId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          isValidId(squadId) &&
+          isValidSquad(request.resource.data, userId, squadId) &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.updatedAt == request.time;
+        allow update: if isOwner(userId) &&
+          isValidId(squadId) &&
+          isValidSquad(request.resource.data, userId, squadId) &&
+          request.resource.data.ownerUid == resource.data.ownerUid &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.updatedAt == request.time &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'clan_id', 'name', 'target_size', 'game_mode',
+            'lobby_delay_sec', 'bot_prefix', 'is_paused', 'updatedAt'
+          ]);
+        allow delete: if isOwner(userId);
+      }
+
+      match /accounts/{accountId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          isValidId(accountId) &&
+          isValidBotAccount(request.resource.data, userId, accountId) &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.updatedAt == request.time;
+        allow update: if isOwner(userId) &&
+          isValidId(accountId) &&
+          isValidBotAccount(request.resource.data, userId, accountId) &&
+          request.resource.data.ownerUid == resource.data.ownerUid &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.updatedAt == request.time &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'password', 'region', 'clan_id', 'squad_id', 'bot_prefix',
+            'nickname', 'max_matches', 'max_hours', 'updatedAt'
+          ]);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

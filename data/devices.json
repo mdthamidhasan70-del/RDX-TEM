@@ -1,0 +1,758 @@
+{
+  "8447177454": {
+    "unique_device_id": "Google|7101ed92-c4f9-486e-89e7-dc3836c2d813",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8447177661": {
+    "unique_device_id": "Google|e5a7acdf-db76-4252-9c2e-642d01ebd9de",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8447346343": {
+    "unique_device_id": "Google|e0034683-57a7-464f-9ab9-dec000ca2852",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8447346597": {
+    "unique_device_id": "Google|74a3f8fa-31a1-4bd7-a1ae-10cb414dc9eb",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8447440851": {
+    "unique_device_id": "Google|75c36e5e-4e15-4b24-bf47-e600782e8685",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8447441093": {
+    "unique_device_id": "Google|106e023c-b9cc-45a7-8956-e3527f66b8fb",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8447568765": {
+    "unique_device_id": "Google|c270562f-2ac5-44b8-a62e-a89aa4950ea4",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8447568965": {
+    "unique_device_id": "Google|1aca9c04-ae49-427f-8d3d-24c3bad48d0d",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8447561683": {
+    "unique_device_id": "Google|49449c62-66c6-463d-b50f-cbc22b28a848",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8447561686": {
+    "unique_device_id": "Google|118dcd7c-be8e-4aa7-bfab-39ee77e5fe99",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451459295": {
+    "unique_device_id": "Google|4144b972-1a24-497d-874e-3d64c38cb188",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8451459676": {
+    "unique_device_id": "Google|3b172c6b-9171-4c5d-a438-7d7637fd095f",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451464364": {
+    "unique_device_id": "Google|6cbebada-80ae-4e78-93f2-4a361bcd4c27",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451464661": {
+    "unique_device_id": "Google|c1b31c51-872f-472a-a93f-34fedcf0d7f8",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451693301": {
+    "unique_device_id": "Google|15294dd5-45b2-4195-9c8b-96223a6a1da9",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451694031": {
+    "unique_device_id": "Google|a4e60717-bcd2-4df4-a17c-c933ca66fdd2",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8451700214": {
+    "unique_device_id": "Google|578b5d9a-53c8-4b70-967d-a956070c47ce",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451700650": {
+    "unique_device_id": "Google|f161c5cb-0670-405e-9474-90d3efc155aa",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8451704733": {
+    "unique_device_id": "Google|b4eb6d5c-1009-4135-a908-9e327579f3e2",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8451705089": {
+    "unique_device_id": "Google|8bb361dd-fc92-4afd-90a1-9241dd08f34f",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8451712142": {
+    "unique_device_id": "Google|45bdd7dd-f107-4b73-8c2d-62d88e9f492d",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8451712445": {
+    "unique_device_id": "Google|ca6cbd90-7a94-4fa8-aaca-244c6cc0b9d8",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8451714647": {
+    "unique_device_id": "Google|2aca1001-78e6-4cc8-bd21-8a44c648de10",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452255023": {
+    "unique_device_id": "Google|9e0a8974-2369-4ce9-8749-664232dabd0f",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452255194": {
+    "unique_device_id": "Google|09d63f52-127e-49ac-a48b-e813546db8cd",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452272522": {
+    "unique_device_id": "Google|d9c6a5dc-5f2d-4c5f-8599-7d26cb1e9e11",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452272846": {
+    "unique_device_id": "Google|15319019-d097-44f5-9d80-3835db25eee2",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452278480": {
+    "unique_device_id": "Google|8242e11f-b849-4535-bad5-a5bff00429b0",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452430486": {
+    "unique_device_id": "Google|06b039a6-52b7-4efa-9f8e-7253a8ebaab1",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452430666": {
+    "unique_device_id": "Google|a48f5a9d-5370-4c58-b2ee-f733f1420f7d",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452431681": {
+    "unique_device_id": "Google|140b4e50-5df0-4ed8-8944-2b59c57d2cad",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452431952": {
+    "unique_device_id": "Google|2dda8446-6682-4149-978c-2d43045fc3ec",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452706074": {
+    "unique_device_id": "Google|d0eef89c-ee38-4ee3-b4e8-1f7fe4b7100c",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452706261": {
+    "unique_device_id": "Google|47cea813-49b1-4d7b-af18-d567174d9fc4",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452707409": {
+    "unique_device_id": "Google|901e0070-fb57-43ba-bae4-01909319caf7",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452707560": {
+    "unique_device_id": "Google|0e14bc7a-e857-40bc-af96-768de6fd29c2",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452710122": {
+    "unique_device_id": "Google|498a05e4-6518-4dad-8cd4-b0389c379cc9",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452710317": {
+    "unique_device_id": "Google|98a80ea6-68f2-4228-a4f7-4fbd1fa2c837",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452712895": {
+    "unique_device_id": "Google|59a72d7c-3bdd-4677-9f90-9a0b71fb0e1e",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452713142": {
+    "unique_device_id": "Google|6395fadf-a06d-4896-8a13-25e27d97bcb0",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452946161": {
+    "unique_device_id": "Google|0d14b83e-46f9-4770-beef-7cec8a246455",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452946239": {
+    "unique_device_id": "Google|2fab2cc2-a923-4776-838a-6af8c15a3dfb",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452947120": {
+    "unique_device_id": "Google|b20f3c01-413c-4327-b795-ba66a52cc642",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452947275": {
+    "unique_device_id": "Google|812fb7ab-5d64-4d60-960e-7db31d62bf23",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452948064": {
+    "unique_device_id": "Google|9d391e4a-fcc7-4908-9088-e818b65ed881",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452948216": {
+    "unique_device_id": "Google|0aa7fe1c-8ac0-41ea-a3d7-d806c5cf524b",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452949738": {
+    "unique_device_id": "Google|cf1b119d-eab2-4725-ba11-9458efaf2de2",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452949873": {
+    "unique_device_id": "Google|24837491-511f-40c0-aa7a-6216aa85a07d",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452951254": {
+    "unique_device_id": "Google|02ea72e0-df43-425c-9fdb-6038e61fe199",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452952658": {
+    "unique_device_id": "Google|dc4f7f7f-72ee-4b30-95cf-b559491ec0f0",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452952815": {
+    "unique_device_id": "Google|23ec40b0-6f6a-40d2-a392-ee19e7968e3e",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452953610": {
+    "unique_device_id": "Google|9260b21f-235e-4aa3-b0ac-c0e70761637b",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452953724": {
+    "unique_device_id": "Google|4b510ad0-53d1-4d27-88e6-4d2b2c1226ad",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8452955189": {
+    "unique_device_id": "Google|4136aa2e-769d-4eb6-bab5-1a359bb9f739",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452955338": {
+    "unique_device_id": "Google|cb3a447e-0529-4f08-91d0-a8b6b81f281f",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452956822": {
+    "unique_device_id": "Google|ca93f5ec-a088-4e94-8eb4-09e2ef10e9ea",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452956965": {
+    "unique_device_id": "Google|667a37bf-7328-41d9-a1c2-e1785a818f7e",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8452957718": {
+    "unique_device_id": "Google|d8e3ab97-cd20-446e-9ca5-dc5efd92146c",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452957878": {
+    "unique_device_id": "Google|f1d5cbb7-f1b1-4974-a837-7b0007f6fa8a",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452959393": {
+    "unique_device_id": "Google|10655772-615b-4b17-afef-2de4c53f0c00",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452959502": {
+    "unique_device_id": "Google|58deaa17-671b-434a-a51d-7f3fee7c4c11",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452960823": {
+    "unique_device_id": "Google|be442c30-3f71-498f-8c87-6e7229cd5ea8",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452960950": {
+    "unique_device_id": "Google|9f23f0c7-11d8-47ec-a408-8ebf96f6c130",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8452961763": {
+    "unique_device_id": "Google|74c4864b-64a7-46cf-97e8-4ad60c4906e4",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8455138198": {
+    "unique_device_id": "Google|a2ab99b6-7beb-4553-aecb-04e501bf0539",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8455138596": {
+    "unique_device_id": "Google|a1d28d13-d2fe-4ce3-81d3-e8d4ab6c204b",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8455142429": {
+    "unique_device_id": "Google|d3ec3378-e7c6-4644-83f1-96a96384b33d",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8455142784": {
+    "unique_device_id": "Google|a2810cde-d376-4351-8651-c5070beebba0",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8456003281": {
+    "unique_device_id": "Google|8f8a58b3-4f84-4a9d-b08e-0495d98e3215",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8456003559": {
+    "unique_device_id": "Google|3baed3c2-72ab-4a42-b27b-541f3f6d8bba",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8456004456": {
+    "unique_device_id": "Google|75708ad1-724e-4dde-bd99-e30c95c0f472",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8456005083": {
+    "unique_device_id": "Google|03d0e7a5-bb67-4e5d-8d07-abe5c3ee8a70",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8458048915": {
+    "unique_device_id": "Google|f747b3bc-715d-4b5b-8a6c-dfbd6b4d6d58",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8458049091": {
+    "unique_device_id": "Google|b7d8aed6-5700-4473-a782-80c2ffd888be",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8458050695": {
+    "unique_device_id": "Google|17563396-d74f-459a-922c-4bb00bbeb01d",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8458050805": {
+    "unique_device_id": "Google|763d20eb-18b9-46bf-ba3a-3d52fee6fefc",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8458051895": {
+    "unique_device_id": "Google|74a09f81-8a5e-4f71-bf53-a5f0d70efe29",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8458052026": {
+    "unique_device_id": "Google|01bdaa02-c067-4a10-9938-12b92219b05f",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8458054806": {
+    "unique_device_id": "Google|6e1afb29-49a1-43e6-8b11-f64f86ffa998",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8458055002": {
+    "unique_device_id": "Google|96ca5b49-8b3b-47fc-98a5-0fb9717b8a81",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8458056583": {
+    "unique_device_id": "Google|4087eb8e-436a-4139-8e03-1220d7775dc5",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8458056716": {
+    "unique_device_id": "Google|861cc11f-f928-4b83-b62d-b4d06a7f3a8b",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8458057648": {
+    "unique_device_id": "Google|e66824d7-143b-4cf0-b28e-515d5d52e00f",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8458057815": {
+    "unique_device_id": "Google|90eaf613-94ae-4a41-8bbd-4f3df15ee969",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8458059437": {
+    "unique_device_id": "Google|81cd3997-62c4-4896-8d01-f70f38b40c19",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8458059629": {
+    "unique_device_id": "Google|45035444-2a7b-47b9-9000-0d44b211f6ae",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8458061347": {
+    "unique_device_id": "Google|c7c1cbf0-69d9-4b77-a732-eabeb545070f",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8458061493": {
+    "unique_device_id": "Google|6b97ea99-93e8-4488-8132-2237dae15225",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8459689671": {
+    "unique_device_id": "Google|d4b846f7-fe53-453f-acbe-615b945b3bc1",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8459689806": {
+    "unique_device_id": "Google|da5170ac-3b06-45ed-8fe9-0409eb99395a",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8459690989": {
+    "unique_device_id": "Google|c36e277d-6737-4e11-9ab4-8b47d6e518fa",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8459691130": {
+    "unique_device_id": "Google|b9af8010-cd8e-493c-bf19-21c41961939e",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8459741163": {
+    "unique_device_id": "Google|f244d52c-2216-4e83-8ad1-6b7e11e1f05c",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8459741295": {
+    "unique_device_id": "Google|3c3dc5d1-2ead-43f5-9493-c817bbd18da6",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8459741423": {
+    "unique_device_id": "Google|85e95a81-906e-4410-a901-401a95e8a7f9",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8459741865": {
+    "unique_device_id": "Google|d2e4d316-54ba-405a-8855-2cd12829e42f",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8460927740": {
+    "unique_device_id": "Google|d1dd2b5b-1818-4837-b478-36e4e15f7909",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8460928000": {
+    "unique_device_id": "Google|66de9b30-f4c5-4254-bc5b-8e307c8e3323",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8460928239": {
+    "unique_device_id": "Google|76725958-b069-48d3-a7c1-7459c52aa45b",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8460937493": {
+    "unique_device_id": "Google|e93708fe-1c2a-4203-9c44-7b9024f04e74",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8463165026": {
+    "unique_device_id": "Google|33490bfa-22ab-46a8-9f6e-139c7c92760e",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8463167332": {
+    "unique_device_id": "Google|a3db1a1d-d9d3-4550-bf65-213b01959556",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8463167958": {
+    "unique_device_id": "Google|016db79c-0c5a-4c26-b356-ec7a3aa26c57",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8463171988": {
+    "unique_device_id": "Google|b6b11a2c-67df-49ee-9328-e4cb6d6dafb4",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8463178614": {
+    "unique_device_id": "Google|bfd10b38-9b0e-45b0-94f2-29200633b53d",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8463179500": {
+    "unique_device_id": "Google|9aa02a08-1014-43c7-8584-7d1368b7edb0",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8463180102": {
+    "unique_device_id": "Google|bb789f2a-88a2-4fd1-b7c7-ca164957c33b",
+    "brand": "Xiaomi",
+    "model": "2201122G",
+    "gpu_renderer": "Adreno (TM) 730",
+    "system_software": "Android OS 13 / API-33"
+  },
+  "8463184372": {
+    "unique_device_id": "Google|fe1a7dab-394b-43af-96a2-769876b9cd07",
+    "brand": "OPPO",
+    "model": "CPH2611",
+    "gpu_renderer": "Adreno (TM) 720",
+    "system_software": "Android OS 14 / API-34"
+  }
+}

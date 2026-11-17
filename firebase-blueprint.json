@@ -1,0 +1,139 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated operator workspace root record.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID matching document ID." },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "displayName", "createdAt", "updatedAt"]
+    },
+    "Guild": {
+      "title": "Guild",
+      "description": "Managed Free Fire guild with active duration timer and pause state.",
+      "type": "object",
+      "properties": {
+        "clan_id": { "type": "string", "description": "Numeric Free Fire Guild UID." },
+        "name": { "type": "string" },
+        "region": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "duration_days": { "type": "number" },
+        "duration_hours": { "type": "number" },
+        "duration_minutes": { "type": "number" },
+        "expires_at": { "type": ["number", "null"] },
+        "is_paused": { "type": "boolean" },
+        "created_at": { "type": "number" },
+        "ownerUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "clan_id",
+        "name",
+        "region",
+        "verified",
+        "duration_days",
+        "duration_hours",
+        "duration_minutes",
+        "expires_at",
+        "is_paused",
+        "created_at",
+        "ownerUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Squad": {
+      "title": "Squad",
+      "description": "Isolated 2-4 player squad with game mode, lobby wait delay, and custom bot prefix.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clan_id": { "type": "string" },
+        "name": { "type": "string" },
+        "target_size": { "type": "number" },
+        "game_mode": {
+          "type": "string",
+          "enum": ["BR", "BR_RANK", "CS", "CS_RANK"]
+        },
+        "lobby_delay_sec": { "type": "number" },
+        "bot_prefix": { "type": "string" },
+        "is_paused": { "type": "boolean" },
+        "created_at": { "type": "number" },
+        "ownerUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "clan_id",
+        "name",
+        "target_size",
+        "game_mode",
+        "lobby_delay_sec",
+        "bot_prefix",
+        "is_paused",
+        "created_at",
+        "ownerUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "BotAccountRecord": {
+      "title": "BotAccountRecord",
+      "description": "Persisted bot account assignment linked to owner workspace, guild, and squad.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "password": { "type": "string" },
+        "region": { "type": "string" },
+        "clan_id": { "type": "string" },
+        "squad_id": { "type": "string" },
+        "bot_prefix": { "type": "string" },
+        "nickname": { "type": "string" },
+        "max_matches": { "type": "number" },
+        "max_hours": { "type": "number" },
+        "ownerUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "uid",
+        "password",
+        "region",
+        "clan_id",
+        "squad_id",
+        "bot_prefix",
+        "nickname",
+        "max_matches",
+        "max_hours",
+        "ownerUid",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
+      "description": "Owner-scoped operator profile document."
+    },
+    "/users/{userId}/guilds/{guildId}": {
+      "schema": { "$ref": "#/backend/entities/Guild" },
+      "description": "Owner-scoped Guild configurations and active duration timers."
+    },
+    "/users/{userId}/squads/{squadId}": {
+      "schema": { "$ref": "#/backend/entities/Squad" },
+      "description": "Owner-scoped Squad configurations (mode, delay, prefix, size)."
+    },
+    "/users/{userId}/accounts/{accountId}": {
+      "schema": { "$ref": "#/backend/entities/BotAccountRecord" },
+      "description": "Owner-scoped Bot Account credentials and squad assignments."
+    }
+  }
+}

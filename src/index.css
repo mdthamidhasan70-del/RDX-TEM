@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #080000;
+  --bg-2: #0f0000;
+  --surface: #161010;
+  --surface-2: #1e1515;
+  --surface-3: #281c1c;
+  --text: #f7f5f0;
+  --text-dim: #a8a29e;
+  --border: rgba(239, 68, 68, 0.14);
+  --border-2: rgba(239, 68, 68, 0.36);
+  --gold: #ef4444;
+  --amber: #dc2626;
+  --copper: #b91c1c;
+  --emerald: #10b981;
+  --emerald-l: #34d399;
+  --teal: #14b8a6;
+  --error: #ef4444;
+  --warn: #f59e0b;
+  --ok: #10b981;
+  --grad-2: linear-gradient(135deg, #ef4444, #dc2626);
+  --grad-3: linear-gradient(135deg, #10b981, #34d399);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: 9px;
+  border: 2px solid var(--bg-2);
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, -40px) scale(1.12); }
+  66% { transform: translate(-40px, 50px) scale(0.92); }
+}
+
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.03); filter: brightness(1.15); }
+}
+
+@keyframes lineSlide {
+  to { background-position: -200% 0; }
+}
+
+@keyframes shakeX {
+  10%, 90% { transform: translateX(-3px); }
+  20%, 80% { transform: translateX(5px); }
+  30%, 50%, 70% { transform: translateX(-8px); }
+  40%, 60% { transform: translateX(8px); }
+}
+
+@keyframes sdotPing {
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.animate-orb-1 { animation: orbFloat 22s ease-in-out infinite; }
+.animate-orb-2 { animation: orbFloat 22s ease-in-out infinite -8s; }
+.animate-orb-3 { animation: orbFloat 22s ease-in-out infinite -14s; }
+.animate-logo-pulse { animation: logoPulse 2.8s ease-in-out infinite; }
+.animate-line-slide {
+  background: linear-gradient(90deg, #ef4444, #f87171, #dc2626, #ef4444);
+  background-size: 200% 100%;
+  animation: lineSlide 3s linear infinite;
+}
+.animate-shake { animation: shakeX 0.48s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+.animate-sdot {
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: sdotPing 2s infinite;
+}
+
+@keyframes accountOrbit {
+  to { transform: rotate(360deg); }
+}
+
+.account-avatar-orbit {
+  background: conic-gradient(
+    from 20deg,
+    transparent 0deg,
+    transparent 205deg,
+    rgba(20, 184, 166, 0.3) 235deg,
+    rgba(45, 212, 191, 1) 275deg,
+    rgba(248, 113, 113, 0.95) 315deg,
+    transparent 350deg
+  );
+  -webkit-mask-image: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 1px));
+  mask-image: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 1px));
+  animation: accountOrbit 7s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(20, 184, 166, 0.45));
+}
+
+.account-card-accent {
+  background: linear-gradient(90deg, transparent, rgba(20, 184, 166, 0.7), rgba(239, 68, 68, 0.65), transparent);
+  opacity: 0.45;
+  transition: opacity 180ms ease;
+}
+
+.account-card:hover .account-card-accent {
+  opacity: 1;
+}
+
+.account-status-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 9px currentColor;
+}
+
+.account-status-live .account-status-dot {
+  animation: accountStatusPulse 1.8s ease-in-out infinite;
+}
+
+.account-status-wait .account-status-dot {
+  animation: accountStatusPulse 1s ease-in-out infinite;
+}
+
+@keyframes accountDistributionPulse {
+  50% { opacity: 0.55; transform: scale(0.82); }
+}
+
+.account-distribution-dot-active {
+  animation: accountDistributionPulse 2s ease-in-out infinite;
+}
+
+@keyframes accountStatusPulse {
+  50% { opacity: 0.45; transform: scale(0.78); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-avatar-orbit,
+  .account-distribution-dot-active,
+  .account-status-live .account-status-dot,
+  .account-status-wait .account-status-dot {
+    animation: none;
+  }
+}
+
+.rdx-grid-bg {
+  background-image:
+    linear-gradient(rgba(239, 68, 68, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(239, 68, 68, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 25%, #000 20%, transparent 78%);
+  mask-image: radial-gradient(ellipse at 50% 25%, #000 20%, transparent 78%);
+}
+
+.rdx-input-dark:-webkit-autofill,
+.rdx-input-dark:-webkit-autofill:hover,
+.rdx-input-dark:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f7f5f0;
+  -webkit-box-shadow: 0 0 0 1000px #0b0101 inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
