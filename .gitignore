@@ -8,3 +8,4 @@ coverage/
 !.env.example
 data/match_sessions.json
 data/match_sessions.json.*.tmp
+data/token_cache.json
