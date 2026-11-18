@@ -249,6 +249,14 @@ export function getMatchmakingRetryDelayMs(reasonHint: string): number {
     : MATCHMAKING_REJECTION_BACKOFF_MS;
 }
 
+export function isAccountRegistrationRateLimited(status: number, code?: unknown, error?: unknown): boolean {
+  return (
+    status === 429 ||
+    Number(code) === 1006 ||
+    /too_many_requests|rate.?limit/i.test(String(error || ''))
+  );
+}
+
 export function isCleanUdpMatchFinish(reason: unknown): boolean {
   return reason === 'completed';
 }
@@ -4094,7 +4102,6 @@ class RdxEngine {
 
       const created: SavedAccountRow[] = [];
       let attempts = 0;
-      let rateLimitStreak = 0;
       const maxAttempts = Math.max(totalCount * 6, 16);
 
       while (created.length < totalCount && attempts < maxAttempts) {
@@ -4123,20 +4130,10 @@ class RdxEngine {
             regJson = {};
           }
           if (regRes.status !== 200 || regJson.code !== 0 || !regJson.data?.uid) {
-            const isRateLimited =
-              regRes.status === 429 ||
-              regJson.code === 1006 ||
-              String(regJson.error || '').includes('too_many_requests');
-            if (isRateLimited) {
-              rateLimitStreak += 1;
-              const waitMs =
-                rateLimitStreak <= gopCandidates.length - 1
-                  ? 2000
-                  : Math.min(25_000, 6000 + (rateLimitStreak - gopCandidates.length) * 5000);
-              prog(`Garena register cooldown (${Math.round(waitMs / 1000)}s), retrying...`);
-              await sleep(waitMs);
+            if (isAccountRegistrationRateLimited(regRes.status, regJson.code, regJson.error)) {
+              prog('Account registration rate-limited by provider; stopped repeated requests. Add existing accounts or retry later.');
+              break;
             } else {
-              rateLimitStreak = 0;
               const reason = String(regJson.error || `HTTP ${regRes.status} code=${regJson.code ?? 'unknown'}`).replace(
                 /^error_/,
                 '',
@@ -4146,7 +4143,6 @@ class RdxEngine {
             }
             continue;
           }
-          rateLimitStreak = 0;
 
           const uid = String(regJson.data.uid);
           const grantBody = JSON.stringify({

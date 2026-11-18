@@ -11,6 +11,7 @@ import {
   getSquadProvisioningStatus,
   isCleanUdpMatchFinish,
   extractTeamIdentity,
+  isAccountRegistrationRateLimited,
   isMatchmakingRetryAllowed,
   isConfirmedSquadMember,
   isSameSquadInvite,
@@ -122,6 +123,13 @@ test('counts only clean UDP match finishes as completed matches', () => {
   assert.equal(isCleanUdpMatchFinish('interrupted'), false);
   assert.equal(isCleanUdpMatchFinish('expired'), false);
   assert.equal(isCleanUdpMatchFinish('MATCH_COMPLETE'), false);
+});
+
+test('stops account registration retries when the provider rate-limits requests', () => {
+  assert.equal(isAccountRegistrationRateLimited(429), true);
+  assert.equal(isAccountRegistrationRateLimited(400, 1006), true);
+  assert.equal(isAccountRegistrationRateLimited(400, 0, 'too_many_requests'), true);
+  assert.equal(isAccountRegistrationRateLimited(500, 7, 'temporary error'), false);
 });
 
 test('extracts team code and group identity from broad roster responses', () => {
