@@ -929,5 +929,26 @@
     "model": "CPH2451",
     "gpu_renderer": "Adreno (TM) 740",
     "system_software": "Android OS 13 / API-33"
+  },
+  "8469362357": {
+    "unique_device_id": "Google|8458314c-2c8d-45b9-bb1a-8f5839f25ea0",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
+  },
+  "8469370208": {
+    "unique_device_id": "Google|337a4a56-23ae-4eea-9e40-b310113f4d07",
+    "brand": "Realme",
+    "model": "RMX3700",
+    "gpu_renderer": "Mali-G710",
+    "system_software": "Android OS 14 / API-34"
+  },
+  "8469374942": {
+    "unique_device_id": "Google|853ef216-c4ed-4870-88f1-389e654122f5",
+    "brand": "Samsung",
+    "model": "SM-G998B",
+    "gpu_renderer": "Adreno (TM) 660",
+    "system_software": "Android OS 12 / API-31"
   }
 }

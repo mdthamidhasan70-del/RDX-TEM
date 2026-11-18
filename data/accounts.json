@@ -36,42 +36,6 @@
     "squad_id": "default_squad"
   },
   {
-    "uid": "8469203003",
-    "password": "RDX771",
-    "region": "BD",
-    "clan_id": "3107168480",
-    "squad_id": "sq_5c920eae",
-    "bot_prefix": "RDX",
-    "nickname": "RDX•OAIMM"
-  },
-  {
-    "uid": "8469203317",
-    "password": "RDX771",
-    "region": "BD",
-    "clan_id": "3107168480",
-    "squad_id": "sq_5c920eae",
-    "bot_prefix": "RDX",
-    "nickname": "RDX•0LLWM"
-  },
-  {
-    "uid": "8469205369",
-    "password": "RDX771",
-    "region": "BD",
-    "clan_id": "3107168480",
-    "squad_id": "sq_5c920eae",
-    "bot_prefix": "RDX",
-    "nickname": "RDX•NRJRQ"
-  },
-  {
-    "uid": "8469205627",
-    "password": "RDX771",
-    "region": "BD",
-    "clan_id": "3107168480",
-    "squad_id": "sq_5c920eae",
-    "bot_prefix": "RDX",
-    "nickname": "RDX•UJ8B3"
-  },
-  {
     "uid": "8469305932",
     "password": "RDX771",
     "region": "BD",
@@ -106,5 +70,32 @@
     "squad_id": "sq_26fe51aa",
     "bot_prefix": "RDX",
     "nickname": "RDX•IXC6G"
+  },
+  {
+    "uid": "8469362357",
+    "password": "RDX771",
+    "region": "BD",
+    "clan_id": "3107168480",
+    "squad_id": "sq_5c920eae",
+    "bot_prefix": "RDX",
+    "nickname": "RDX•5F6DT"
+  },
+  {
+    "uid": "8469370208",
+    "password": "RDX771",
+    "region": "BD",
+    "clan_id": "3107168480",
+    "squad_id": "sq_5c920eae",
+    "bot_prefix": "RDX",
+    "nickname": "RDX•4B5QN"
+  },
+  {
+    "uid": "8469374942",
+    "password": "RDX771",
+    "region": "BD",
+    "clan_id": "3107168480",
+    "squad_id": "sq_5c920eae",
+    "bot_prefix": "RDX",
+    "nickname": "RDX•2OKKH"
   }
 ]
