@@ -977,13 +977,13 @@ export function MySquadView({
                       <div className="flex items-center justify-between">
                         <span className="text-[#a8a29e]">Guild Joined</span>
                         <span className="font-mono-num font-bold text-emerald-400">
-                          {sq.guild_joined_count} / {members.length}
+                          {sq.guild_joined_count} / {sq.target_size}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[#a8a29e]">Server-Confirmed In Group</span>
                         <span className="font-mono-num font-bold text-[#14b8a6]">
-                          {sq.in_squad_count} / {members.length}
+                          {sq.in_squad_count} / {sq.target_size}
                         </span>
                       </div>
                       {members.length > 0 && (
