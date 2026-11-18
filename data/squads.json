@@ -1,24 +1,35 @@
 [
   {
-    "id": "sq_49d3f40f",
-    "clan_id": "3106921760",
+    "id": "default_squad",
+    "clan_id": "",
+    "name": "Squad 1",
+    "target_size": 4,
+    "game_mode": "BR_RANK",
+    "lobby_delay_sec": 5,
+    "bot_prefix": "RDX",
+    "is_paused": false,
+    "created_at": 1795019342334
+  },
+  {
+    "id": "sq_5c920eae",
+    "clan_id": "3107168480",
     "name": "Squad 1",
     "target_size": 4,
     "game_mode": "CS_RANK",
     "lobby_delay_sec": 0,
     "bot_prefix": "RDX",
     "is_paused": false,
-    "created_at": 1794903405730
+    "created_at": 1795023327057
   },
   {
-    "id": "sq_cb166a84",
-    "clan_id": "3106921760",
+    "id": "sq_26fe51aa",
+    "clan_id": "3107168480",
     "name": "Squad 2",
     "target_size": 4,
     "game_mode": "CS_RANK",
     "lobby_delay_sec": 0,
-    "bot_prefix": "rdx2",
+    "bot_prefix": "RDX",
     "is_paused": false,
-    "created_at": 1794903603778
+    "created_at": 1795025029778
   }
 ]

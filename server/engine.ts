@@ -151,6 +151,7 @@ interface AccountCredentials {
 interface WorkerControl {
   cancelled: boolean;
   fastReconnect?: boolean;
+  loginFailureCount?: number;
   sockets: Set<net.Socket>;
   timers: Set<ReturnType<typeof setTimeout>>;
   udpHandles: Set<UdpMatchHandle>;
@@ -246,6 +247,50 @@ export function getMatchmakingRetryDelayMs(reasonHint: string): number {
   return /\bCANCEL(?:LED|ED)?\b/i.test(reasonHint)
     ? MATCH_CANCEL_RETRY_DELAY_MS
     : MATCHMAKING_REJECTION_BACKOFF_MS;
+}
+
+export function isCleanUdpMatchFinish(reason: unknown): boolean {
+  return reason === 'completed';
+}
+
+export function extractTeamIdentity(
+  decoded: DecodedDict,
+  primitiveStrings: Iterable<string> = [],
+  primitiveNumbers: Iterable<string | number | bigint> = [],
+): { teamCode: string; groupId: string } {
+  let teamCode = '';
+  let groupId = '';
+  const strings = Array.from(primitiveStrings).map((v) => String(v).trim()).filter(Boolean);
+  const numbers = Array.from(primitiveNumbers).map((v) => String(v));
+
+  const codeCandidate = [...numbers, ...strings.flatMap((v) => v.match(/\b\d{6,8}\b/g) || [])]
+    .find((v) => /^\d{6,8}$/.test(v));
+  if (codeCandidate) teamCode = codeCandidate;
+
+  const groupCandidate = strings.find((v) =>
+    (/^[0-9a-fA-F-]{20,48}$/.test(v) || /^team[_:-]/i.test(v) || /^group[_:-]/i.test(v))
+  );
+  if (groupCandidate) groupId = groupCandidate;
+
+  const visit = (value: unknown): void => {
+    if (!value || typeof value !== 'object') return;
+    for (const [key, child] of Object.entries(value)) {
+      if (typeof child === 'string') {
+        const text = child.trim();
+        if (!teamCode && /^\d{6,8}$/.test(text)) teamCode = text;
+        if (!groupId && (/^[0-9a-fA-F-]{20,48}$/.test(text) || /^team[_:-]/i.test(text) || /^group[_:-]/i.test(text))) {
+          groupId = text;
+        }
+      } else if (typeof child === 'number' || typeof child === 'bigint') {
+        const text = String(child);
+        if (!teamCode && /^\d{6,8}$/.test(text)) teamCode = text;
+      } else if (typeof child === 'object') {
+        visit(child);
+      }
+    }
+  };
+  visit(decoded);
+  return { teamCode, groupId };
 }
 
 export function getSquadProvisioningStatus(
@@ -1174,7 +1219,8 @@ class RdxEngine {
         body: payload,
         timeoutMs: 15000,
       });
-      if (res.status === 403 || (res.status !== 200 && /ban|suspend/i.test(res.body.toString('utf8')))) {
+      const httpBody = res.body.toString('utf8');
+      if (res.status !== 200 && /ban|suspend/i.test(httpBody) && !/403|rate|limit|cooldown/i.test(httpBody)) {
         return {
           accountId: '',
           jwtToken: '',
@@ -1812,7 +1858,7 @@ class RdxEngine {
     const tg = await this.getAccessToken(uid, password);
     if (!tg) {
       this.log(`Garena token grant failed for ${uid}`, 'error');
-      this.updateStatus(uid, 'OFFLINE', 0);
+      this.updateStatus(uid, 'CONNECTING', 0);
       return null;
     }
     if (tg.banned) {
@@ -1884,14 +1930,14 @@ class RdxEngine {
 
     if (!ml || !ml.serverUrl) {
       this.log(`MajorLogin failed for ${uid}`, 'error');
-      this.updateStatus(uid, 'OFFLINE', 0);
+      this.updateStatus(uid, 'CONNECTING', 0);
       return null;
     }
 
     const ld = await this.getLoginData(loginPayload, ml.jwtToken, ml.serverUrl, vc.releaseVersion);
     if (!ld) {
       this.log(`GetLoginData failed for ${uid}`, 'error');
-      this.updateStatus(uid, 'OFFLINE', 0);
+      this.updateStatus(uid, 'CONNECTING', 0);
       return null;
     }
 
@@ -2129,6 +2175,7 @@ class RdxEngine {
   }
 
   private isSquadActive(squadKey: string): boolean {
+    if (squadKey === 'default_squad') return false;
     const squads = this.loadSquadsDb();
     const s = squads.find((x) => x.id === squadKey);
     if (!s || s.is_paused) return false;
@@ -2377,8 +2424,20 @@ class RdxEngine {
 
         if (rt.modeRevision !== coordRev) return;
         if (!rt.teamGroupId) {
-          this.log(`[${squadLabel}] Group ID not received yet — rebuilding & retrying squad creation...`, 'warning');
-          this.rebuildSquadSession(squadKey, 'Group ID timeout', false);
+          this.log(`[${squadLabel}] Group ID not received yet — retrying create/fresh without disconnecting the squad`, 'warning');
+          if (!leader.socket.destroyed) {
+            leader.socket.write(this.buildCreateTeamPacket(leader.cred, gameMode, expected, rt.modeProfileIdx));
+            setTimeout(() => {
+              if (!leader.socket.destroyed && rt.modeRevision === coordRev) {
+                leader.socket.write(this.buildTeamFreshPacket(leader.cred));
+              }
+            }, 1200);
+          }
+          setTimeout(() => {
+            if (rt.modeRevision === coordRev && this.isSquadActive(squadKey)) {
+              void this.runSquadCoordinator(squadKey);
+            }
+          }, 5000);
           return;
         }
         rt.teamCreated = true;
@@ -2641,7 +2700,10 @@ class RdxEngine {
     guildReady = false,
     actualGuildJoined = false,
   ): void {
-    if (!addrs || !addrs.includes(':')) return;
+    if (!addrs || !addrs.includes(':')) {
+      ctrl.mainClosed = kind === 'MAIN';
+      return;
+    }
     const [host, portStr] = addrs.split(':');
     const port = Number(portStr);
     if (!host || !Number.isFinite(port)) return;
@@ -2725,6 +2787,16 @@ class RdxEngine {
             const prims = extractProtoPrimitives(frame.payload);
             const pktType = Number(dec[4] || 0);
             const f5 = dec[5] && typeof dec[5] === 'object' ? (dec[5] as DecodedDict) : dec;
+
+            const identity = extractTeamIdentity(dec, prims.strings, prims.numbers);
+            if (identity.teamCode && rt.teamCode !== identity.teamCode) {
+              rt.teamCode = identity.teamCode;
+              this.log(`[${squadLabel}] TEAM Code: ${identity.teamCode}`, 'success');
+            }
+            if (identity.groupId && rt.teamGroupId !== identity.groupId) {
+              rt.teamGroupId = identity.groupId;
+              if (pktType === 1) rt.teamCreated = true;
+            }
 
             for (const fk of [11, 5, 1, 3]) {
               const v = f5[fk];
@@ -2991,7 +3063,8 @@ class RdxEngine {
                   this.log(`Playing In-Match [${modeSpec.label}] (UDP Live) | ${cred.nickname} -> ${serverIpPort}`, 'success');
                 },
                 onLog: (m, lvl) => this.log(m, lvl),
-                onFinished: (completedCleanly) => {
+                onFinished: (matchFinishReason) => {
+                  const completedCleanly = isCleanUdpMatchFinish(matchFinishReason);
                   ctrl.udpHandles.delete(handle);
                   if (completedCleanly) {
                     this.totalMatches += 1;
@@ -3000,24 +3073,24 @@ class RdxEngine {
                     setTimeout(() => void this.refreshAccountProfile(cred), 8500);
                   }
                   const peerNow = rt.peers.get(cred.account_id);
-                  this.updateStatus(
-                    cred.account_id,
-                    this.isPaused(cred.account_id)
-                      ? 'PAUSED'
-                      : peerNow?.inSquad
-                      ? 'SQUAD JOINED'
-                      : peerNow?.guildJoined
-                      ? 'GUILD JOINED'
-                      : 'ONLINE',
-                    0,
-                  );
+                          this.updateStatus(
+                            cred.account_id,
+                            this.isPaused(cred.account_id)
+                              ? 'PAUSED'
+                              : peerNow?.inSquad
+                              ? 'SQUAD JOINED'
+                              : peerNow?.guildJoined
+                              ? 'GUILD JOINED'
+                              : 'ONLINE',
+                            0,
+                          );
                   // Once all squad peers finish match, hold in lobby for configurable lobby_delay_sec before next match
                   const stillPlaying = Array.from(rt.peers.values()).some(
                     (p) => this.accounts.get(p.uid)?.status === 'IN_MATCH',
                   );
                   if (
                     !stillPlaying &&
-                    rt.lastMatchEndedAt === 0 &&
+                            (rt.lastMatchEndedAt === 0 || !completedCleanly) &&
                     !ctrl.cancelled &&
                     !this.isPaused(cred.account_id)
                   ) {
@@ -3026,6 +3099,17 @@ class RdxEngine {
                     rt.searchRetries = 0;
                     rt.lastMatchEndedAt = Date.now();
                     const delayMs = this.getSquadLobbyDelayMs(squadKey);
+                            if (!completedCleanly) {
+                              this.log(
+                                `[${squadLabel}] Match interrupted (${matchFinishReason}) — restoring lobby and reconnecting squad`,
+                                'warning',
+                              );
+                              setTimeout(() => {
+                                this.requestLeaderTeamFresh(rt);
+                                void this.runSquadCoordinator(squadKey);
+                              }, Math.max(1500, delayMs));
+                              return;
+                            }
                     const squads = this.loadSquadsDb();
                     const squadConfig = squads.find((s) => s.id === squadKey);
                     const completedMatches = (squadConfig?.completed_matches_in_cycle || 0) + 1;
@@ -3101,6 +3185,14 @@ class RdxEngine {
         }
         if (isCurrentWorker && !ctrl.cancelled && !this.isPaused(cred.account_id)) {
           this.updateStatus(cred.account_id, 'CONNECTING', 0);
+          rt.matchSearching = false;
+          rt.searchStartedAt = 0;
+          rt.lastMatchEndedAt = 0;
+          setTimeout(() => {
+            if (!ctrl.cancelled && !this.isPaused(cred.account_id) && this.isGuildActiveForBot(rt.clanId) && this.isSquadActive(squadKey)) {
+              void this.runSquadCoordinator(squadKey);
+            }
+          }, 1200);
         }
       }
     });
@@ -3130,6 +3222,7 @@ class RdxEngine {
 
     const ctrl: WorkerControl = {
       cancelled: false,
+      loginFailureCount: 0,
       sockets: new Set(),
       timers: new Set(),
       udpHandles: new Set(),
@@ -3169,13 +3262,20 @@ class RdxEngine {
               this.handleBannedBotAutoReplace(uid, row);
               break;
             } else {
-              this.updateStatus(uid, 'OFFLINE', 0);
+              ctrl.loginFailureCount = (ctrl.loginFailureCount || 0) + 1;
+              this.updateStatus(uid, 'CONNECTING', 0);
+              if (ctrl.loginFailureCount >= 3) {
+                this.log(`[AUTO-REPLACE] Login unavailable for ${uid} after 3 attempts — replacing the player`, 'warning');
+                this.handleBannedBotAutoReplace(uid, row);
+                break;
+              }
               await sleep(15_000, ctrl);
             }
             continue;
           }
           if (ctrl.cancelled) break;
 
+          ctrl.loginFailureCount = 0;
           this.workers.set(cred.account_id, ctrl);
 
           let guildReady = true;
@@ -3188,6 +3288,14 @@ class RdxEngine {
               await sleep(2000, ctrl);
               continue;
             }
+          }
+
+          if (!cred.functional_addrs) {
+            this.invalidateCache(row.uid);
+            this.invalidateCache(cred.account_id);
+            this.updateStatus(uid, 'CONNECTING', 0);
+            await sleep(5000, ctrl);
+            continue;
           }
 
           ctrl.mainClosed = false;

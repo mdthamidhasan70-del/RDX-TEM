@@ -9,6 +9,8 @@ import {
   getNextMatchCountdownSeconds,
   getNextModeProfileIndex,
   getSquadProvisioningStatus,
+  isCleanUdpMatchFinish,
+  extractTeamIdentity,
   isMatchmakingRetryAllowed,
   isConfirmedSquadMember,
   isSameSquadInvite,
@@ -113,6 +115,23 @@ test('counts down to the next match without going below zero', () => {
 test('uses fast retry only for explicit cancellation, not generic server rejection', () => {
   assert.equal(getMatchmakingRetryDelayMs('match cancelled by server'), 500);
   assert.equal(getMatchmakingRetryDelayMs('19156542264 | 3 | 10 | G'), 30_000);
+});
+
+test('counts only clean UDP match finishes as completed matches', () => {
+  assert.equal(isCleanUdpMatchFinish('completed'), true);
+  assert.equal(isCleanUdpMatchFinish('interrupted'), false);
+  assert.equal(isCleanUdpMatchFinish('expired'), false);
+  assert.equal(isCleanUdpMatchFinish('MATCH_COMPLETE'), false);
+});
+
+test('extracts team code and group identity from broad roster responses', () => {
+  const identity = extractTeamIdentity(
+    { 1: '1234567', 5: { 14: 'A1B2C3D4E5F678901234567890' } } as any,
+    ['A1B2C3D4E5F678901234567890'],
+    [19181059892],
+  );
+  assert.equal(identity.teamCode, '1234567');
+  assert.equal(identity.groupId, 'A1B2C3D4E5F678901234567890');
 });
 
 test('marks unfilled squads as needing players unless account creation is pending', () => {
