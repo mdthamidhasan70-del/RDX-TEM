@@ -950,5 +950,12 @@
     "model": "SM-G998B",
     "gpu_renderer": "Adreno (TM) 660",
     "system_software": "Android OS 12 / API-31"
+  },
+  "8469383061": {
+    "unique_device_id": "Google|c8be71c4-6332-4fe0-affa-cb216fbf1d9b",
+    "brand": "OnePlus",
+    "model": "CPH2451",
+    "gpu_renderer": "Adreno (TM) 740",
+    "system_software": "Android OS 13 / API-33"
   }
 }
