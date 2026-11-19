@@ -1353,6 +1353,9 @@ class RdxEngine {
         body: payload,
         timeoutMs: 15000,
       });
+      if (res.status !== 200) {
+        this.log(`MajorLogin HTTP ${res.status} from ${new URL(url).hostname} · body ${res.body.length}`, 'warning');
+      }
       const httpBody = res.body.toString('utf8');
       if (res.status !== 200 && /ban|suspend/i.test(httpBody) && !/403|rate|limit|cooldown/i.test(httpBody)) {
         return {
@@ -2027,7 +2030,6 @@ class RdxEngine {
     const loginServers = Array.from(new Set([
       vc.serverUrl,
       'https://loginbp.ppmainecoonghj.com/',
-      'https://loginbp.ggpolarbear.com/',
       'https://loginbp.ggblueshark.com/',
     ].filter((value): value is string => Boolean(value))));
 
