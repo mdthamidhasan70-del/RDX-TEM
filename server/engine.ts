@@ -10,6 +10,7 @@ import {
   GGRE_RAW,
   HEX_KEY,
   KEYSTREAM,
+  aesDecrypt,
   aesEncrypt,
   createPacket,
   createProto,
@@ -586,6 +587,7 @@ class RdxEngine {
   private expiryWatcher: ReturnType<typeof setInterval> | null = null;
   private lastClanAttemptAt = new Map<string, number>();
   private clanHardBlockedReason = new Map<string, string>();
+  private loginGateAt = 0;
 
   log(message: string, level: EngineLogEntry['level'] = 'info'): void {
     const entry: EngineLogEntry = {
@@ -1379,24 +1381,32 @@ class RdxEngine {
         return null;
       }
 
+      const decrypted = aesDecrypt(res.body);
+      const candidateBodies = decrypted
+        ? [decrypted, res.body]
+        : [res.body];
+
       let bestFields: Record<number, bigint | Buffer> | null = null;
       let bestDecoded: DecodedDict | null = null;
       let bestScore = -1;
-
-      for (const off of [64, 0, 48, 32, 80, 16, 128, 8, 96, 60, 56, 40, 24, 20, 12, 4]) {
-        if (off >= res.body.length) continue;
-        const slice = res.body.subarray(off);
-        const rf = extractRawFields(slice);
-        const dec = decodeProtobuf2(slice);
-        const hasJwt = typeof dec[8] === 'string' && dec[8].includes('.');
-        const hasUrl = typeof dec[10] === 'string' && dec[10].startsWith('http');
-        const score = Object.keys(dec).length + (hasJwt ? 100 : 0) + (hasUrl ? 50 : 0);
-        if (score > bestScore && hasJwt) {
-          bestScore = score;
-          bestFields = rf;
-          bestDecoded = dec;
-          if (hasJwt && hasUrl) break;
+      for (const body of candidateBodies) {
+        for (const off of [0, 64, 48, 32, 80, 16, 128, 8, 96, 60, 56, 40, 24, 20, 12, 4]) {
+          if (off >= body.length) continue;
+          const slice = body.subarray(off);
+          const rf = extractRawFields(slice);
+          const dec = decodeProtobuf2(slice);
+          const hasJwt = typeof dec[8] === 'string' && dec[8].includes('.');
+          const hasUrl = typeof dec[10] === 'string' && dec[10].startsWith('http');
+          const score = Object.keys(dec).length + (hasJwt ? 100 : 0) + (hasUrl ? 50 : 0);
+          if (score > bestScore && hasJwt) {
+            bestScore = score;
+            bestFields = rf;
+            bestDecoded = dec;
+            if (hasJwt && hasUrl) break;
+          }
         }
+        if (bestDecoded && typeof bestDecoded[8] === 'string' && bestDecoded[8].includes('.') &&
+            typeof bestDecoded[10] === 'string' && bestDecoded[10].startsWith('http')) break;
       }
 
       if (!bestFields || !bestDecoded) return null;
@@ -1983,6 +1993,11 @@ class RdxEngine {
       return cached;
     }
 
+    const now = Date.now();
+    const waitMs = Math.max(0, this.loginGateAt - now);
+    if (waitMs > 0) await sleep(waitMs);
+    this.loginGateAt = Date.now() + 650;
+
     this.log(`LOGIN UID: ${uid}`, 'info');
     const vc = await this.versionConfig('BD');
     if (!vc) return null;
@@ -2009,20 +2024,30 @@ class RdxEngine {
       String(dev.unique_device_id),
     );
 
+    const loginServers = Array.from(new Set([
+      vc.serverUrl,
+      'https://loginbp.ppmainecoonghj.com/',
+      'https://loginbp.ggpolarbear.com/',
+      'https://loginbp.ggblueshark.com/',
+    ].filter((value): value is string => Boolean(value))));
+
     let ml: Awaited<ReturnType<RdxEngine['majorLogin']>> = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      ml = await this.majorLogin(majorPayload, vc.serverUrl, vc.releaseVersion);
+    for (const loginServer of loginServers) {
+      for (let attempt = 0; attempt < 2 && !ml; attempt++) {
+        ml = await this.majorLogin(majorPayload, loginServer, vc.releaseVersion);
+        if (ml) break;
+        await sleep(900);
+        const next = this.buildLoginPayloads(
+          tg.accessToken,
+          tg.openId,
+          tg.platform,
+          vc.remoteVersion,
+          String(dev.unique_device_id),
+        );
+        majorPayload = next.majorPayload;
+        loginPayload = next.loginPayload;
+      }
       if (ml) break;
-      await sleep(1500);
-      const next = this.buildLoginPayloads(
-        tg.accessToken,
-        tg.openId,
-        tg.platform,
-        vc.remoteVersion,
-        String(dev.unique_device_id),
-      );
-      majorPayload = next.majorPayload;
-      loginPayload = next.loginPayload;
     }
 
     if (ml?.banned) {
