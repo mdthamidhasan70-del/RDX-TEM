@@ -215,7 +215,13 @@ async function startServer() {
     const botPrefix = typeof req.body?.bot_prefix === 'string' ? req.body.bot_prefix.trim() || undefined : undefined;
     const token = String(req.body?.token || '').trim();
     if (token) {
-      const resolvedSquadId = await engine.ensureSquadForAdd(clanId, rawSquadId, squadName);
+      let resolvedSquadId: string;
+      try {
+        resolvedSquadId = await engine.ensureSquadForAdd(clanId, rawSquadId, squadName);
+      } catch (err) {
+        res.status(400).json({ status: 'error', error: err instanceof Error ? err.message : 'Unable to select squad' });
+        return;
+      }
       void engine.addTokenAccount(token, clanId, resolvedSquadId);
       res.json({ status: 'ok', clan_id: clanId, squad_id: resolvedSquadId });
       return;
@@ -228,7 +234,13 @@ async function startServer() {
       return;
     }
 
-    const resolvedSquadId = await engine.ensureSquadForAdd(clanId, rawSquadId, squadName);
+    let resolvedSquadId: string;
+    try {
+      resolvedSquadId = await engine.ensureSquadForAdd(clanId, rawSquadId, squadName, uid);
+    } catch (err) {
+      res.status(400).json({ status: 'error', error: err instanceof Error ? err.message : 'Unable to select squad' });
+      return;
+    }
     const db = engine.loadAccountsDb().filter((a) => String(a.uid) !== uid);
     const row = {
       uid,
@@ -276,6 +288,15 @@ async function startServer() {
     const restarted = engine.restartAccount(uid);
     res.json({ status: 'ok', restarted });
   });
+
+  app.post('/api/account/recover', asyncRoute(async (req, res) => {
+    const uid = String(req.body?.uid || '').trim();
+    const result = await engine.recoverAccount(uid);
+    res.status(result.ok ? 200 : 404).json({
+      status: result.ok ? 'ok' : 'error',
+      ...result,
+    });
+  }));
 
   app.post('/api/account/pause', (req, res) => {
     const uid = String(req.body?.uid || '').trim();

@@ -56,6 +56,17 @@ export interface SavedAccountRow {
   max_hours?: number;
 }
 
+export interface RecoveryAccountInfo {
+  uid: string;
+  nickname?: string;
+  region: string;
+  clan_id: string;
+  squad_id?: string;
+  status: string;
+  removed_at?: number;
+  removal_reason?: string;
+}
+
 export interface GuildInfo {
   clan_id: string;
   name: string;
@@ -113,6 +124,8 @@ export interface StatsResponse {
   accounts: BotAccount[];
   saved_accounts?: SavedAccountRow[];
   deleted_uids?: string[];
+  lost_accounts?: RecoveryAccountInfo[];
+  recoverable_accounts?: RecoveryAccountInfo[];
   guilds?: GuildInfo[];
   squads?: SquadInfo[];
   logs: LogEntry[];

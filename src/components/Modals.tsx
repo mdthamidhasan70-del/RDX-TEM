@@ -389,12 +389,12 @@ export function CreateTeamModal({
   }, [chosenExistingSquad]);
 
   const slotsRemaining = chosenExistingSquad
-    ? Math.max(1, 4 - chosenExistingSquad.member_uids.length)
+    ? Math.max(0, 4 - chosenExistingSquad.member_uids.length)
     : 12;
 
   useEffect(() => {
     if (chosenExistingSquad) {
-      setCount((prev) => Math.max(1, Math.min(slotsRemaining, prev)));
+      setCount((prev) => (slotsRemaining > 0 ? Math.max(1, Math.min(slotsRemaining, prev)) : 0));
     } else {
       setCount((prev) => Math.max(2, Math.min(12, prev)));
     }
@@ -431,6 +431,7 @@ export function CreateTeamModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (chosenExistingSquad && slotsRemaining < 1) return;
     setLoading(true);
     try {
       await onSubmit({
@@ -575,6 +576,7 @@ export function CreateTeamModal({
               <select
                 value={count}
                 onChange={(e) => setCount(Number(e.target.value))}
+                disabled={slotsRemaining < 1}
                 className="w-full h-11 px-3.5 rounded-xl bg-[#0f0000] border border-[rgba(239,68,68,0.16)] text-sm font-medium outline-none focus:border-[#ef4444]"
               >
                 {Array.from({ length: slotsRemaining }, (_, i) => i + 1).map((n) => (
@@ -612,6 +614,11 @@ export function CreateTeamModal({
             />
           </div>
         </div>
+        {chosenExistingSquad && slotsRemaining < 1 && (
+          <p className="mb-3.5 text-xs font-semibold text-amber-400">
+            This squad already has 4 players. Choose another squad or remove a player first.
+          </p>
+        )}
 
         {/* GAME MODE & BOT PREFIX / LOBBY WAIT */}
         <div className="mb-3.5">
@@ -681,7 +688,7 @@ export function CreateTeamModal({
           </button>
           <button
             type="submit"
-            disabled={loading || !/^\d+$/.test(effectiveClanId)}
+            disabled={loading || !/^\d+$/.test(effectiveClanId) || count < 1 || (Boolean(chosenExistingSquad) && slotsRemaining < 1)}
             className="h-10 px-4 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 text-[#080000] text-[13px] font-bold inline-flex items-center gap-2 cursor-pointer disabled:opacity-60"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <Bolt size={14} />}

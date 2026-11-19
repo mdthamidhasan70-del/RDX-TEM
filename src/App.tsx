@@ -63,6 +63,7 @@ import {
   type LogEntry,
   type NotificationItem,
   type PageId,
+  type RecoveryAccountInfo,
   type SavedAccountRow,
   type SquadInfo,
   type StatsResponse,
@@ -101,6 +102,8 @@ export default function App() {
   });
 
   const [accounts, setAccounts] = useState<BotAccount[]>([]);
+  const [lostAccounts, setLostAccounts] = useState<RecoveryAccountInfo[]>([]);
+  const [recoverableAccounts, setRecoverableAccounts] = useState<RecoveryAccountInfo[]>([]);
   const [guilds, setGuilds] = useState<GuildInfo[]>([]);
   const [squads, setSquads] = useState<SquadInfo[]>([]);
   const [creatingBots, setCreatingBots] = useState<boolean>(false);
@@ -385,6 +388,8 @@ export default function App() {
         const nextDeleted = Array.isArray(data.deleted_uids) ? data.deleted_uids : [];
 
         setAccounts(nextAccounts);
+        setLostAccounts(Array.isArray(data.lost_accounts) ? data.lost_accounts : []);
+        setRecoverableAccounts(Array.isArray(data.recoverable_accounts) ? data.recoverable_accounts : []);
         setGuilds(nextGuilds);
         setSquads(nextSquads);
         setCreatingBots(Boolean(data.creating));
@@ -713,6 +718,20 @@ export default function App() {
       setTimeout(() => fetchStats(false), 900);
     } catch {
       addToast('Failed to reach engine', 'error');
+    }
+  };
+
+  const handleRecoverAccount = async (account: RecoveryAccountInfo, archived: boolean) => {
+    try {
+      const data = await postApi('/api/account/recover', { uid: account.uid });
+      if (data.status !== 'ok') throw new Error(data.error || 'Unable to recover player');
+      addToast(
+        archived ? `Restored ${account.nickname || account.uid}` : `Reconnect requested for ${account.nickname || account.uid}`,
+        'success',
+      );
+      setTimeout(() => fetchStats(false), 900);
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Unable to recover player', 'error');
     }
   };
 
@@ -2126,6 +2145,72 @@ export default function App() {
                   </div>
                 </div>
 
+                <div className="grid gap-4 mb-5 lg:grid-cols-2">
+                  <div className="rounded-2xl bg-[#0f0000] border border-[rgba(239,68,68,0.18)] overflow-hidden">
+                    <div className="px-4 py-3 bg-[#161010] border-b border-[rgba(239,68,68,0.14)]">
+                      <h2 className="text-sm font-extrabold text-[#f7f5f0]">Disconnected Players</h2>
+                      <p className="mt-1 text-xs text-[#a8a29e]">Saved accounts stay in their squad and can be reconnected.</p>
+                    </div>
+                    <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
+                      {recoverableAccounts.length === 0 ? (
+                        <p className="px-2 py-5 text-center text-xs text-[#a8a29e]">No disconnected players.</p>
+                      ) : (
+                        recoverableAccounts.map((account) => (
+                          <div key={account.uid} className="flex items-center gap-3 rounded-xl bg-white/[0.025] border border-white/[0.06] p-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-bold text-[#f7f5f0]">{account.nickname || account.uid}</p>
+                              <p className="mt-1 text-[11px] text-[#a8a29e]">
+                                UID {account.uid} · {account.status}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRecoverAccount(account, false)}
+                              disabled={!engineOnline}
+                              className="h-9 shrink-0 px-3 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold inline-flex items-center gap-1.5 hover:bg-emerald-500/20 disabled:opacity-50 cursor-pointer"
+                            >
+                              <RefreshCw size={13} />
+                              Reconnect
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-[#0f0000] border border-[rgba(239,68,68,0.18)] overflow-hidden">
+                    <div className="px-4 py-3 bg-[#161010] border-b border-[rgba(239,68,68,0.14)]">
+                      <h2 className="text-sm font-extrabold text-[#f7f5f0]">Removed / Lost Players</h2>
+                      <p className="mt-1 text-xs text-[#a8a29e]">Restore a previously removed player and return it to a squad.</p>
+                    </div>
+                    <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
+                      {lostAccounts.length === 0 ? (
+                        <p className="px-2 py-5 text-center text-xs text-[#a8a29e]">No archived players.</p>
+                      ) : (
+                        lostAccounts.map((account) => (
+                          <div key={account.uid} className="flex items-center gap-3 rounded-xl bg-white/[0.025] border border-white/[0.06] p-3">
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-bold text-[#f7f5f0]">{account.nickname || account.uid}</p>
+                              <p className="mt-1 text-[11px] text-[#a8a29e]">
+                                UID {account.uid} · {account.removal_reason || 'Removed'}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRecoverAccount(account, true)}
+                              disabled={!engineOnline}
+                              className="h-9 shrink-0 px-3 rounded-lg bg-red-500/10 border border-red-500/25 text-[#ff8585] text-xs font-bold inline-flex items-center gap-1.5 hover:bg-red-500/20 disabled:opacity-50 cursor-pointer"
+                            >
+                              <RefreshCw size={13} />
+                              Restore
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mb-4">
                   <div className="inline-flex gap-1 p-1 rounded-xl bg-[#161010] border border-[rgba(239,68,68,0.16)]">
                     {(
@@ -2356,14 +2441,14 @@ export default function App() {
       <ConfirmModal
         open={confirmState.open}
         title="Remove Account"
-        message={`Remove account ${confirmState.uid}? This cannot be undone.`}
+        message={`Remove account ${confirmState.uid}? You can restore it later from Live Console.`}
         onCancel={() => setConfirmState({ open: false, uid: '' })}
         onConfirm={handleConfirmDelete}
       />
       <ConfirmModal
         open={clearAllOpen}
         title="Clear All Bots"
-        message={`Delete all ${accounts.length} bot account(s) from the engine and Cloud Backup? Guilds and Squad configurations will be kept.`}
+        message={`Remove all ${accounts.length} bot account(s) from the engine and Cloud Backup? You can restore them later from Live Console. Guilds and Squad configurations will be kept.`}
         onCancel={() => setClearAllOpen(false)}
         onConfirm={handleConfirmClearAll}
       />

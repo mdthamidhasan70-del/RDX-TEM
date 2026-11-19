@@ -24,6 +24,7 @@ import { startUdpMatchSession, type UdpMatchHandle } from './udp.ts';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json');
+const LOST_ACCOUNTS_FILE = path.join(DATA_DIR, 'lost_accounts.json');
 const GUILDS_FILE = path.join(DATA_DIR, 'guilds.json');
 const SQUADS_FILE = path.join(DATA_DIR, 'squads.json');
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json');
@@ -33,6 +34,7 @@ const TOKEN_CACHE_TTL_MS = 1200 * 1000;
 const MATCHMAKING_REJECTION_BACKOFF_MS = 30_000;
 const MATCH_CANCEL_RETRY_DELAY_MS = 500;
 const MATCH_CYCLE_RESET_AFTER = 10;
+const MAX_SQUAD_SIZE = 4;
 export const CLAN_ID_DEFAULT = '3106921760';
 
 const SEED_ACCOUNTS: SavedAccountRow[] = [];
@@ -50,6 +52,22 @@ export interface SavedAccountRow {
   max_matches?: number;
   max_hours?: number;
   replacement_pending_match?: boolean;
+}
+
+interface ArchivedAccountRow extends SavedAccountRow {
+  removed_at: number;
+  removal_reason: string;
+}
+
+export interface RecoveryAccountInfo {
+  uid: string;
+  nickname?: string;
+  region: string;
+  clan_id: string;
+  squad_id?: string;
+  status: string;
+  removed_at?: number;
+  removal_reason?: string;
 }
 
 export interface GuildConfig {
@@ -218,8 +236,20 @@ export function sanitizeFiniteNumber(value: unknown, fallback = 0): number {
     const n = Number(trimmed);
     return Number.isFinite(n) ? n : fallback;
   }
+
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+export function getReconnectDelayMs(failureCount: number): number {
+  const failures = Math.max(1, Math.floor(Number(failureCount) || 1));
+  return Math.min(5 * 60_000, 5_000 * 2 ** (failures - 1));
+}
+
+export function getSquadAvailableSlots(memberCount: number, pendingCount = 0): number {
+  const members = Math.max(0, Math.floor(Number(memberCount) || 0));
+  const pending = Math.max(0, Math.floor(Number(pendingCount) || 0));
+  return Math.max(0, MAX_SQUAD_SIZE - members - pending);
 }
 
 export function clampInteger(value: unknown, fallback: number, min: number, max: number): number {
@@ -778,6 +808,44 @@ class RdxEngine {
     fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify(rows, null, 2), 'utf8');
   }
 
+  private loadLostAccountsDb(): ArchivedAccountRow[] {
+    ensureDataDir();
+    if (!fs.existsSync(LOST_ACCOUNTS_FILE)) return [];
+    try {
+      const raw = JSON.parse(fs.readFileSync(LOST_ACCOUNTS_FILE, 'utf8'));
+      return Array.isArray(raw) ? raw : [];
+    } catch (err) {
+      this.log(`Could not read lost account archive: ${(err as Error).message}`, 'error');
+      return [];
+    }
+  }
+
+  private saveLostAccountsDb(rows: ArchivedAccountRow[]): void {
+    ensureDataDir();
+    fs.writeFileSync(LOST_ACCOUNTS_FILE, JSON.stringify(rows.slice(-1000), null, 2), 'utf8');
+  }
+
+  private archiveAccounts(rows: SavedAccountRow[], reason: string): void {
+    if (rows.length === 0) return;
+    const archived = this.loadLostAccountsDb();
+    const byUid = new Map(archived.map((row) => [String(row.uid), row]));
+    const removedAt = Date.now();
+    for (const row of rows) {
+      byUid.set(String(row.uid), { ...row, removed_at: removedAt, removal_reason: reason });
+    }
+    this.saveLostAccountsDb(Array.from(byUid.values()));
+  }
+
+  private getPendingCreationCount(squadId: string): number {
+    let pending = this.activeCreationPending.get(squadId) || 0;
+    for (const job of this.creationQueue) {
+      job.chunkSizes.forEach((size, index) => {
+        if (job.squadIds[index] === squadId) pending += size;
+      });
+    }
+    return pending;
+  }
+
   loadGuildsDb(): GuildConfig[] {
     ensureDataDir();
     if (!fs.existsSync(GUILDS_FILE)) return [];
@@ -907,9 +975,49 @@ class RdxEngine {
       }
     }
 
+    if (this.enforceSquadCapacity(accounts, squads)) {
+      accountsChanged = true;
+      squadsChanged = true;
+    }
+
     if (guildsChanged) this.saveGuildsDb(guilds);
     if (squadsChanged) this.saveSquadsDb(squads);
     if (accountsChanged) this.saveAccountsDb(accounts);
+  }
+
+  private enforceSquadCapacity(accounts: SavedAccountRow[], squads: SquadConfig[]): boolean {
+    const membersBySquad = new Map<string, SavedAccountRow[]>();
+    for (const row of accounts) {
+      const squadId = String(row.squad_id || '');
+      if (!squadId || squadId.startsWith('guild_')) continue;
+      const members = membersBySquad.get(squadId) || [];
+      members.push(row);
+      membersBySquad.set(squadId, members);
+    }
+
+    let changed = false;
+    for (const [squadId, members] of membersBySquad) {
+      if (members.length <= MAX_SQUAD_SIZE) continue;
+      const source = squads.find((squad) => squad.id === squadId);
+      if (!source) continue;
+      source.target_size = MAX_SQUAD_SIZE;
+      for (let offset = MAX_SQUAD_SIZE; offset < members.length; offset += MAX_SQUAD_SIZE) {
+        const overflow = members.slice(offset, offset + MAX_SQUAD_SIZE);
+        const newId = `sq_${crypto.randomUUID().slice(0, 8)}`;
+        const squad: SquadConfig = {
+          ...source,
+          id: newId,
+          name: `${source.name} (${Math.floor(offset / MAX_SQUAD_SIZE) + 1})`,
+          target_size: Math.min(MAX_SQUAD_SIZE, overflow.length),
+          created_at: Date.now(),
+        };
+        squads.push(squad);
+        for (const row of overflow) row.squad_id = newId;
+      }
+      this.log(`Moved excess players from "${source.name}" to keep each squad at ${MAX_SQUAD_SIZE} players`, 'warning');
+      changed = true;
+    }
+    return changed;
   }
 
   private loadTokenCache(): Record<string, Record<string, unknown>> {
@@ -3267,17 +3375,14 @@ class RdxEngine {
           if (!cred) {
             const curStatus = this.accounts.get(this.resolveAccountKey(uid) || uid)?.status;
             if (curStatus === 'BANNED') {
-              this.handleBannedBotAutoReplace(uid, row);
-              break;
+              this.log(`Login rejected for ${uid}; account retained and retrying after cooldown`, 'warning');
+              await sleep(5 * 60_000, ctrl);
             } else {
               ctrl.loginFailureCount = (ctrl.loginFailureCount || 0) + 1;
               this.updateStatus(uid, 'CONNECTING', 0);
-              if (ctrl.loginFailureCount >= 3) {
-                this.log(`[AUTO-REPLACE] Login unavailable for ${uid} after 3 attempts — replacing the player`, 'warning');
-                this.handleBannedBotAutoReplace(uid, row);
-                break;
-              }
-              await sleep(15_000, ctrl);
+              const delayMs = getReconnectDelayMs(ctrl.loginFailureCount);
+              this.log(`Login unavailable for ${uid}; account retained, retrying in ${Math.round(delayMs / 1000)}s`, 'warning');
+              await sleep(delayMs, ctrl);
             }
             continue;
           }
@@ -3625,31 +3730,6 @@ class RdxEngine {
     this.log(`Deleted Guild ${cid}`, 'warning');
   }
 
-  private handleBannedBotAutoReplace(uid: string, row: SavedAccountRow): void {
-    const skey = this.getSquadKey(row.clan_id, row.squad_id);
-    const squadCfg = this.loadSquadsDb().find((s) => s.id === skey);
-    const clanId = row.clan_id || squadCfg?.clan_id || CLAN_ID_DEFAULT;
-    const password = row.password || 'RDX771';
-    const botPrefix = sanitizeBotPrefix(row.bot_prefix || squadCfg?.bot_prefix || 'RDX');
-    const squadLabel = squadCfg?.name || skey;
-
-    this.log(
-      `[AUTO-REPLACE] Banned bot ${uid} removed from "${squadLabel}" — spawning fresh replacement bot (${botPrefix}•...)`,
-      'warning',
-    );
-    this.deleteAccount(uid);
-
-    if (clanId && skey && !squadCfg?.is_paused) {
-      this.enqueueBotCreation({
-        clanId,
-        chunkSizes: [1],
-        squadIds: [skey],
-        password,
-        botPrefix,
-      });
-    }
-  }
-
   private enqueueBotCreation(job: CreationJob): void {
     this.creationQueue.push(job);
     if (!this.creationWorkerRunning) {
@@ -3674,7 +3754,7 @@ class RdxEngine {
     }
   }
 
-  async ensureSquadForAdd(clanId: string, squadId?: string, squadName?: string): Promise<string> {
+  async ensureSquadForAdd(clanId: string, squadId?: string, squadName?: string, accountUid?: string): Promise<string> {
     const cid = String(clanId || '').trim() || CLAN_ID_DEFAULT;
     const guilds = this.loadGuildsDb();
     if (!guilds.some((g) => g.clan_id === cid)) {
@@ -3685,9 +3765,20 @@ class RdxEngine {
     if (sid) {
       const existing = squads.find((s) => s.id === sid && s.clan_id === cid);
       if (existing) {
-        const currentMembers = this.loadAccountsDb().filter(
+        const members = this.loadAccountsDb().filter(
           (a) => this.getSquadKey(a.clan_id, a.squad_id) === existing.id,
-        ).length;
+        );
+        const alreadyAssigned = accountUid
+          ? members.some((row) => {
+              const key = this.resolveAccountKey(String(row.uid));
+              const acc = key ? this.accounts.get(key) : undefined;
+              return String(row.uid) === accountUid || acc?.uid === accountUid;
+            })
+          : false;
+        const currentMembers = members.length + this.getPendingCreationCount(existing.id);
+        if (!alreadyAssigned && getSquadAvailableSlots(currentMembers) === 0) {
+          throw new Error('Squad is full (maximum 4 players). Choose another squad or remove a player first.');
+        }
         const nextSize = Math.max(2, Math.min(4, Math.max(existing.target_size || 2, currentMembers + 1)));
         if (existing.target_size !== nextSize) {
           existing.target_size = nextSize;
@@ -3748,8 +3839,21 @@ class RdxEngine {
       `Squad ${guildSquadCount + 1}`;
 
     if (mode === 'assign_existing') {
-      const uids = Array.isArray(input.account_uids) ? input.account_uids.map(String).filter(Boolean) : [];
+      const uids = Array.isArray(input.account_uids) ? Array.from(new Set(input.account_uids.map(String).filter(Boolean))) : [];
       if (uids.length === 0) return { ok: false, squads: [], error: 'Select at least 1 player' };
+      if (uids.length > MAX_SQUAD_SIZE) {
+        return { ok: false, squads: [], error: `A squad can have at most ${MAX_SQUAD_SIZE} players` };
+      }
+      const db = this.loadAccountsDb();
+      const targetSet = new Set(uids);
+      const selectedRows = db.filter((row) => {
+        const key = this.resolveAccountKey(String(row.uid));
+        const acc = key ? this.accounts.get(key) : undefined;
+        return targetSet.has(String(row.uid)) || Boolean(acc && targetSet.has(acc.uid));
+      });
+      if (selectedRows.length !== uids.length) {
+        return { ok: false, squads: [], error: 'One or more selected accounts were not found' };
+      }
       const targetSize = Math.max(2, Math.min(4, Number(input.target_size || uids.length || 4)));
       const squadId = `sq_${crypto.randomUUID().slice(0, 8)}`;
       const cfg: SquadConfig = {
@@ -3766,8 +3870,6 @@ class RdxEngine {
       existingSquads.push(cfg);
       this.saveSquadsDb(existingSquads);
 
-      const db = this.loadAccountsDb();
-      const targetSet = new Set(uids);
       for (const row of db) {
         const key = this.resolveAccountKey(String(row.uid));
         const acc = key ? this.accounts.get(key) : undefined;
@@ -3800,10 +3902,28 @@ class RdxEngine {
     if (targetSqId) {
       const existingTarget = existingSquads.find((s) => s.id === targetSqId && s.clan_id === clanId);
       if (existingTarget) {
-        const addCount = Math.max(1, Math.min(4, Number(input.count || 1)));
+        const requestedCount = Math.floor(Number(input.count || 1));
+        if (!Number.isFinite(requestedCount) || requestedCount < 1) {
+          return { ok: false, squads: [], error: 'A valid player count is required' };
+        }
         const currentMembers = this.loadAccountsDb().filter(
           (a) => this.getSquadKey(a.clan_id, a.squad_id) === existingTarget.id,
         ).length;
+        const availableSlots = getSquadAvailableSlots(
+          currentMembers,
+          this.getPendingCreationCount(existingTarget.id),
+        );
+        if (availableSlots === 0) {
+          return { ok: false, squads: [], error: 'Squad is full (maximum 4 players)' };
+        }
+        if (requestedCount > availableSlots) {
+          return {
+            ok: false,
+            squads: [],
+            error: `Only ${availableSlots} player slot(s) remain in this squad`,
+          };
+        }
+        const addCount = requestedCount;
         const desiredTargetSize = Math.max(
           2,
           Math.min(4, Math.max(existingTarget.target_size || 2, currentMembers + addCount)),
@@ -3898,6 +4018,25 @@ class RdxEngine {
     const cfg = squads.find((s) => s.id === sid);
     if (!cfg) return null;
 
+    const db = this.loadAccountsDb();
+    const removeSet = new Set((input.remove_uids || []).map(String));
+    const addSet = new Set((input.add_uids || []).map(String));
+    const matchesSelection = (row: SavedAccountRow, selection: Set<string>) => {
+      const key = this.resolveAccountKey(String(row.uid));
+      const acc = key ? this.accounts.get(key) : undefined;
+      return selection.has(String(row.uid)) || Boolean(acc && selection.has(acc.uid));
+    };
+    const currentMembers = db.filter((row) => this.getSquadKey(row.clan_id, row.squad_id) === sid);
+    const remainingMembers = currentMembers.filter((row) => !matchesSelection(row, removeSet)).length;
+    const addedMembers = db.filter(
+      (row) =>
+        matchesSelection(row, addSet) &&
+        this.getSquadKey(row.clan_id, row.squad_id) !== sid,
+    ).length;
+    if (getSquadAvailableSlots(remainingMembers, this.getPendingCreationCount(sid)) < addedMembers) {
+      throw new Error(`A squad can have at most ${MAX_SQUAD_SIZE} players`);
+    }
+
     let modeChanged = false;
     if (typeof input.name === 'string' && input.name.trim()) cfg.name = input.name.trim();
     if (input.target_size !== undefined) {
@@ -3924,16 +4063,13 @@ class RdxEngine {
     }
     this.saveSquadsDb(squads);
 
-    const db = this.loadAccountsDb();
-    const removeSet = new Set((input.remove_uids || []).map(String));
-    const addSet = new Set((input.add_uids || []).map(String));
     const toRestart: SavedAccountRow[] = [];
 
     for (const row of db) {
       const key = this.resolveAccountKey(String(row.uid));
       const acc = key ? this.accounts.get(key) : undefined;
-      const matchesRemove = removeSet.has(String(row.uid)) || (acc && removeSet.has(acc.uid));
-      const matchesAdd = addSet.has(String(row.uid)) || (acc && addSet.has(acc.uid));
+      const matchesRemove = matchesSelection(row, removeSet);
+      const matchesAdd = matchesSelection(row, addSet);
 
       if (matchesRemove && this.getSquadKey(row.clan_id, row.squad_id) === sid) {
         row.squad_id = undefined;
@@ -4321,6 +4457,8 @@ class RdxEngine {
     if (uid) for (const id of this.linkedIds(uid)) targets.add(id);
     if (authUid) for (const id of this.linkedIds(authUid)) targets.add(id);
 
+    const db = this.loadAccountsDb();
+    this.archiveAccounts(db.filter((row) => targets.has(String(row.uid))), 'Removed from engine');
     for (const id of targets) {
       this.recentDeletedUids.add(id);
       const w = this.workers.get(id);
@@ -4354,13 +4492,13 @@ class RdxEngine {
       }
     }
 
-    const db = this.loadAccountsDb().filter((a) => !targets.has(String(a.uid)));
-    this.saveAccountsDb(db);
+    this.saveAccountsDb(db.filter((a) => !targets.has(String(a.uid))));
     this.log(`Removed account ${uid || authUid}`, 'warning');
   }
 
   clearAllAccounts(): number {
     const db = this.loadAccountsDb();
+    this.archiveAccounts(db, 'Cleared from engine');
     const removedCount = Math.max(db.length, this.accounts.size);
     this.creationQueue = [];
     this.activeCreationPending.clear();
@@ -4409,6 +4547,100 @@ class RdxEngine {
     this.saveTokenCache({});
     this.log(`Cleared all ${removedCount} bot account(s)`, 'warning');
     return removedCount;
+  }
+
+  listLostAccounts(): RecoveryAccountInfo[] {
+    return this.loadLostAccountsDb()
+      .slice()
+      .reverse()
+      .map((row) => ({
+        uid: String(row.uid),
+        nickname: row.nickname,
+        region: String(row.region || 'BD'),
+        clan_id: String(row.clan_id || ''),
+        squad_id: row.squad_id,
+        status: 'REMOVED',
+        removed_at: row.removed_at,
+        removal_reason: row.removal_reason,
+      }));
+  }
+
+  listRecoverableAccounts(): RecoveryAccountInfo[] {
+    return this.loadAccountsDb()
+      .map((row) => {
+        const key = this.resolveAccountKey(String(row.uid));
+        const account = key ? this.accounts.get(key) : undefined;
+        const status = account?.status || 'CONNECTING';
+        return {
+          uid: String(row.uid),
+          nickname: row.nickname || account?.nickname,
+          region: String(row.region || 'BD'),
+          clan_id: String(row.clan_id || ''),
+          squad_id: row.squad_id,
+          status,
+        };
+      })
+      .filter((row) => ['OFFLINE', 'BANNED', 'CONNECTING'].includes(row.status));
+  }
+
+  async recoverAccount(uid: string): Promise<{ ok: boolean; restored?: boolean; error?: string }> {
+    const targetUid = String(uid || '').trim();
+    if (!targetUid) return { ok: false, error: 'uid required' };
+
+    const db = this.loadAccountsDb();
+    const existing = db.find((row) => String(row.uid) === targetUid);
+    if (existing) {
+      this.togglePause(targetUid, false);
+      this.startGuestWorker(existing);
+      this.log(`Reconnect requested for ${targetUid}; saved account retained`, 'info');
+      return { ok: true, restored: false };
+    }
+
+    const archive = this.loadLostAccountsDb();
+    const archived = archive.find((row) => String(row.uid) === targetUid);
+    if (!archived) return { ok: false, error: 'Player was not found in the recovery archive' };
+
+    const restored: SavedAccountRow = {
+      uid: archived.uid,
+      password: archived.password,
+      region: archived.region,
+      clan_id: archived.clan_id || CLAN_ID_DEFAULT,
+      squad_id: archived.squad_id,
+      bot_prefix: archived.bot_prefix,
+      nickname: archived.nickname,
+      max_matches: archived.max_matches,
+      max_hours: archived.max_hours,
+      replacement_pending_match: archived.replacement_pending_match,
+    };
+    const squad = this.loadSquadsDb().find(
+      (item) => item.id === restored.squad_id && item.clan_id === restored.clan_id,
+    );
+    if (squad) {
+      const currentMembers = db.filter(
+        (row) => this.getSquadKey(row.clan_id, row.squad_id) === squad.id,
+      ).length;
+      if (getSquadAvailableSlots(currentMembers, this.getPendingCreationCount(squad.id)) === 0) {
+        restored.squad_id = await this.ensureSquadForAdd(
+          restored.clan_id,
+          undefined,
+          `Recovered ${restored.uid.slice(-4)}`,
+        );
+      }
+    } else {
+      restored.squad_id = await this.ensureSquadForAdd(
+        restored.clan_id,
+        undefined,
+        `Recovered ${restored.uid.slice(-4)}`,
+      );
+    }
+
+    db.push(restored);
+    this.saveAccountsDb(db);
+    this.saveLostAccountsDb(archive.filter((row) => String(row.uid) !== targetUid));
+    for (const id of this.linkedIds(targetUid)) this.recentDeletedUids.delete(id);
+    this.startGuestWorker(restored);
+    this.log(`Restored player ${targetUid} from the recovery archive`, 'success');
+    return { ok: true, restored: true };
   }
 
   syncWorkspaceFromCloud(input: {
@@ -4488,6 +4720,7 @@ class RdxEngine {
         curAccSet.add(uid);
         newlyAdded.push(row);
       }
+      if (this.enforceSquadCapacity(curAccs, curSquads)) this.saveSquadsDb(curSquads);
       if (newlyAdded.length > 0) {
         this.saveAccountsDb(curAccs);
         for (const r of newlyAdded) {
@@ -4672,6 +4905,8 @@ class RdxEngine {
       accounts: accs,
       saved_accounts: accountsDb,
       deleted_uids: Array.from(this.recentDeletedUids).slice(-100),
+      lost_accounts: this.listLostAccounts(),
+      recoverable_accounts: this.listRecoverableAccounts(),
       guilds: guildsOut,
       squads: squadsOut,
       logs: this.logs.slice(-200),

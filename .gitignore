@@ -9,3 +9,4 @@ coverage/
 data/match_sessions.json
 data/match_sessions.json.*.tmp
 data/token_cache.json
+data/lost_accounts.json

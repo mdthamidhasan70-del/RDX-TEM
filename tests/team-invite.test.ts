@@ -3,6 +3,8 @@ import test from 'node:test';
 
 import {
   engine,
+  getReconnectDelayMs,
+  getSquadAvailableSlots,
   isConfirmedSquadMember,
   isSameSquadInvite,
   resolveSquadLeaderUid,
@@ -39,6 +41,19 @@ test('handles empty or missing squad state without crashing', () => {
   assert.equal(isSameSquadInvite('u1', null, 'group-a', null, 'u1'), true);
   assert.equal(isConfirmedSquadMember('u2', null, 'group-a', 'group-a'), false);
   assert.equal(isConfirmedSquadMember('u2', ['u1', 'u2'], 'group-a', 'group-a'), true);
+});
+
+test('reconnect backoff grows gradually and remains bounded', () => {
+  assert.equal(getReconnectDelayMs(1), 5_000);
+  assert.equal(getReconnectDelayMs(3), 20_000);
+  assert.equal(getReconnectDelayMs(20), 5 * 60_000);
+});
+
+test('squad capacity includes pending player creation and never exceeds four', () => {
+  assert.equal(getSquadAvailableSlots(0), 4);
+  assert.equal(getSquadAvailableSlots(2, 1), 1);
+  assert.equal(getSquadAvailableSlots(4), 0);
+  assert.equal(getSquadAvailableSlots(3, 2), 0);
 });
 
 test('guild-only rows are not treated as active squad members', () => {
