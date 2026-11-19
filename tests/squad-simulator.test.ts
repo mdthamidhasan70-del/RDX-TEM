@@ -72,8 +72,8 @@ test('status updates preserve active squad membership when reconnecting or re-on
   assert.equal(engine.accounts.get('1001')?.guild_joined, true);
 
   engine.updateStatus('1001', 'OFFLINE', 0);
-  assert.equal(engine.accounts.get('1001')?.in_squad, false);
-  assert.equal(engine.accounts.get('1001')?.guild_joined, false);
+  assert.equal(engine.accounts.get('1001')?.in_squad, true);
+  assert.equal(engine.accounts.get('1001')?.guild_joined, true);
 });
 
 test('invalid numeric inputs are sanitized instead of producing NaN values', () => {

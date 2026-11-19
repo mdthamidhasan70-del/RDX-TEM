@@ -1254,7 +1254,7 @@ export function MySquadView({
                   <Shield size={12} className="text-emerald-300" /> Guild Joined
                 </div>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <strong className="font-mono-num text-lg font-black text-[#f7f5f0]">
+                  <strong className="font-mono-num text-lg font-black text-emerald-400">
                     {activeSquad.guild_joined_count}
                   </strong>
                   <span className="text-[10px] text-[#77716d]">/ {activeSquad.target_size}</span>

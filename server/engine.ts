@@ -252,6 +252,15 @@ export function getSquadAvailableSlots(memberCount: number, pendingCount = 0): n
   return Math.max(0, MAX_SQUAD_SIZE - members - pending);
 }
 
+export function getEffectiveSquadSize(configuredSize: number, assignedMembers: number, pendingCount = 0): number {
+  const assigned = Math.max(0, Math.floor(Number(assignedMembers) || 0));
+  const pending = Math.max(0, Math.floor(Number(pendingCount) || 0));
+  const configured = Math.max(2, Math.min(MAX_SQUAD_SIZE, Math.floor(Number(configuredSize) || 4)));
+  if (pending > 0) return configured;
+  if (assigned >= 2) return Math.max(2, Math.min(configured, assigned));
+  return Math.max(2, Math.min(MAX_SQUAD_SIZE, configured));
+}
+
 export function clampInteger(value: unknown, fallback: number, min: number, max: number): number {
   const base = Math.floor(sanitizeFiniteNumber(value, fallback));
   if (!Number.isFinite(min) || !Number.isFinite(max)) return base;
@@ -691,8 +700,12 @@ class RdxEngine {
     const acc = this.accounts.get(key);
     if (!acc) return;
     const nowMs = Date.now();
-    const stopping = status === 'PAUSED' || status === 'OFFLINE' || status === 'BANNED';
-    const keepSquadState = Boolean(acc.in_squad || acc.guild_joined) && !stopping;
+    const stopping = status === 'PAUSED';
+    const transientConnectionLoss = status === 'OFFLINE' || status === 'BANNED';
+    const keepSquadState =
+      Boolean(acc.in_squad || acc.guild_joined) &&
+      !stopping &&
+      (transientConnectionLoss || status !== 'OFFLINE');
     if (stopping) {
       if (!acc.paused_at) acc.paused_at = nowMs;
     } else if (acc.paused_at && !this.isPaused(key)) {
@@ -711,6 +724,9 @@ class RdxEngine {
     } else if (status === 'ONLINE' || status === 'CONNECTING') {
       acc.in_squad = keepSquadState && Boolean(acc.in_squad);
       acc.guild_joined = keepSquadState;
+    } else if (transientConnectionLoss) {
+      acc.in_squad = Boolean(acc.in_squad);
+      acc.guild_joined = Boolean(acc.guild_joined);
     } else if (stopping) {
       acc.in_squad = false;
       acc.guild_joined = false;
@@ -2260,11 +2276,7 @@ class RdxEngine {
     );
     const pending = this.getPendingCreationCountForSquad(squadKey, clanId);
     if (cfg && cfg.target_size >= 2) {
-      const target = Math.max(2, Math.min(4, cfg.target_size));
-      if (pending === 0 && dbRows.length >= 2) {
-        return Math.max(2, Math.min(target, dbRows.length));
-      }
-      return target;
+      return getEffectiveSquadSize(cfg.target_size, dbRows.length, pending);
     }
     return Math.max(2, Math.min(4, dbRows.length || 2));
   }
@@ -4832,6 +4844,12 @@ class RdxEngine {
         .map((r) => this.resolveAccountKey(String(r.uid)) || String(r.uid));
       const sqAccs = accs.filter((a) => (a.squad_id || this.getSquadKey(a.clan_id, null)) === sq.id);
       const uids = Array.from(new Set([...dbMemberUids, ...sqAccs.map((a) => a.uid)]));
+      const pendingCreations = this.getPendingCreationCountForSquad(sq.id, sq.clan_id);
+      const effectiveTargetSize = getEffectiveSquadSize(
+        sq.target_size,
+        uids.length,
+        pendingCreations,
+      );
       const inMatchCount = sqAccs.filter((a) => a.status === 'IN_MATCH').length;
       const searchingCount = sqAccs.filter((a) => a.status === 'SEARCHING').length;
       const retryPendingCount = sqAccs.filter((a) => a.status === 'MATCH_CANCELLED').length;
@@ -4840,8 +4858,8 @@ class RdxEngine {
       const onlineCount = sqAccs.filter((a) => !a.is_paused && onlineStatuses.has(a.status)).length;
       const provisioningStatus = getSquadProvisioningStatus(
         uids.length,
-        sq.target_size,
-        this.getPendingCreationCountForSquad(sq.id, sq.clan_id),
+        effectiveTargetSize,
+        pendingCreations,
       );
       const nextMatchAt = rt?.lastMatchEndedAt
         ? rt.lastMatchEndedAt + this.getSquadLobbyDelayMs(sq.id)
@@ -4859,6 +4877,7 @@ class RdxEngine {
 
       return {
         ...sq,
+        target_size: effectiveTargetSize,
         game_mode: normalizeGameMode(sq.game_mode),
         lobby_delay_sec: Math.max(0, Math.min(120, Number(sq.lobby_delay_sec ?? 5))),
         bot_prefix: sanitizeBotPrefix(sq.bot_prefix),

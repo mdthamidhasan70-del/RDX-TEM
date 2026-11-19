@@ -5,6 +5,7 @@ import {
   engine,
   getReconnectDelayMs,
   getSquadAvailableSlots,
+  getEffectiveSquadSize,
   isConfirmedSquadMember,
   isSameSquadInvite,
   resolveSquadLeaderUid,
@@ -56,6 +57,13 @@ test('squad capacity includes pending player creation and never exceeds four', (
   assert.equal(getSquadAvailableSlots(3, 2), 0);
 });
 
+test('partial 2 and 3 player squads use their actual effective roster', () => {
+  assert.equal(getEffectiveSquadSize(4, 2, 0), 2);
+  assert.equal(getEffectiveSquadSize(4, 3, 0), 3);
+  assert.equal(getEffectiveSquadSize(4, 4, 0), 4);
+  assert.equal(getEffectiveSquadSize(4, 3, 1), 4);
+});
+
 test('guild-only rows are not treated as active squad members', () => {
   const runtime = engine as any;
   assert.equal(runtime.getSquadKey('123456', null), 'guild_123456');
@@ -74,6 +82,6 @@ test('status updates preserve active squad membership when reconnecting or re-on
   assert.equal(engine.accounts.get('1001')?.guild_joined, true);
 
   engine.updateStatus('1001', 'OFFLINE', 0);
-  assert.equal(engine.accounts.get('1001')?.in_squad, false);
-  assert.equal(engine.accounts.get('1001')?.guild_joined, false);
+  assert.equal(engine.accounts.get('1001')?.in_squad, true);
+  assert.equal(engine.accounts.get('1001')?.guild_joined, true);
 });
