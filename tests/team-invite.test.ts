@@ -10,6 +10,7 @@ import {
   isSameSquadInvite,
   resolveSquadLeaderUid,
 } from '../server/engine.ts';
+import { formatStatusText } from '../src/types.ts';
 
 test('resolveSquadLeaderUid prefers the fixed slot-1 member when present', () => {
   assert.equal(resolveSquadLeaderUid(['u2', 'u1', 'u3'], 'u1'), 'u1');
@@ -84,4 +85,8 @@ test('status updates preserve active squad membership when reconnecting or re-on
   engine.updateStatus('1001', 'OFFLINE', 0);
   assert.equal(engine.accounts.get('1001')?.in_squad, true);
   assert.equal(engine.accounts.get('1001')?.guild_joined, true);
+});
+
+test('provider outages retain a dedicated visible status', () => {
+  assert.equal(formatStatusText('PROVIDER_UNAVAILABLE', 'BR_RANK'), 'Provider Login Unavailable');
 });

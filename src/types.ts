@@ -204,6 +204,7 @@ export function formatStatusText(
   if (s === 'CONNECTING') return 'Connecting';
   if (s === 'OFFLINE') return 'Offline';
   if (s === 'BANNED') return 'Banned';
+  if (s === 'PROVIDER_UNAVAILABLE') return 'Provider Login Unavailable';
   if (s === 'PAUSED') return 'Paused';
   return raw;
 }

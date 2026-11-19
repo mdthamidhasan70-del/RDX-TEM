@@ -2089,7 +2089,7 @@ class RdxEngine {
 
     if (!ml || !ml.serverUrl) {
       this.log(`MajorLogin failed for ${uid}`, 'error');
-      this.updateStatus(uid, 'CONNECTING', 0);
+      this.updateStatus(uid, 'PROVIDER_UNAVAILABLE', 0);
       return null;
     }
 
@@ -3416,6 +3416,8 @@ class RdxEngine {
             if (curStatus === 'BANNED') {
               this.log(`Login rejected for ${uid}; account retained and retrying after cooldown`, 'warning');
               await sleep(5 * 60_000, ctrl);
+            } else if (curStatus === 'PROVIDER_UNAVAILABLE') {
+              await sleep(60_000, ctrl);
             } else {
               ctrl.loginFailureCount = (ctrl.loginFailureCount || 0) + 1;
               this.updateStatus(uid, 'CONNECTING', 0);
