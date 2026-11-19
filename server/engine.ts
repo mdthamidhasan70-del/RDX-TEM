@@ -4580,7 +4580,7 @@ class RdxEngine {
           status,
         };
       })
-      .filter((row) => ['OFFLINE', 'BANNED', 'CONNECTING'].includes(row.status));
+      .filter((row) => ['OFFLINE', 'BANNED'].includes(row.status));
   }
 
   async recoverAccount(uid: string): Promise<{ ok: boolean; restored?: boolean; error?: string }> {
